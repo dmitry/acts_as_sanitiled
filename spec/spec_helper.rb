@@ -1,9 +1,9 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
+require 'active_support/core_ext'
 require 'acts_as_sanitiled'
 require 'bacon'
-require 'active_support'
 
 class ActiveRecord
   class Base
