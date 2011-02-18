@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'sanitize'
-require 'RedCloth'
+require 'redcloth'
 require 'active_support'
 require 'acts_as_sanitiled/railtie' if defined?(Rails)
 
