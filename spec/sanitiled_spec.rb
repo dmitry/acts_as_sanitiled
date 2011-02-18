@@ -39,19 +39,39 @@ EOF
     @desc_html    = '_why announces <i>Sandbox</i>'
     @desc_plain   = '_why announces Sandbox'
 
-    @body_html    = "<p>First line<br />\nSecond line with <strong>bold</strong></p>\n<p>Second paragraph with special char\342\204\242, <a>XSS attribute</a>,<br />\nscript&gt;script tag, and <b>unclosed tag.</b></p>"
+    @body_html    = "<p>First line<br>\nSecond line with <strong>bold</strong></p>\n<p>Second paragraph with special char\342\204\242, <a>XSS attribute</a>,<br>\nscript&gt;script tag, and <b>unclosed tag.</b></p>"
     @body_plain   = "First line\nSecond line with bold\n\nSecond paragraph with special char™, XSS attribute,\nscript>script tag, and unclosed tag."
   end
 
-  it "should properly textilize and strip html" do
+  it "should properly textilize and sanitize by default" do
     @story.description.should.equal @desc_html
-    @story.description(:source).should.equal @desc_textile
-    @story.description(:plain).should.equal @desc_plain
-
     @story.body.should.equal @body_html
-    @story.body(:source).should.equal @body_textile
+  end
+
+  it "should mark textilized and sanitized output as html safe" do
+    @story.description.should.be :html_safe?
+    @story.body.should.be :html_safe?
+  end if ActsAsSanitiled.html_safe_available?
+
+  it "should properly strip html when given the 'plain' option" do
+    @story.description(:plain).should.equal @desc_plain
     @story.body(:plain).should.equal @body_plain
   end
+
+  it "should mark output stripped of html as html safe" do
+    @story.description(:plain).should.be :html_safe?
+    @story.body(:plain).should.be :html_safe?
+  end if ActsAsSanitiled.html_safe_available?
+
+  it "should leave unchanged when given the 'source' option" do
+    @story.description(:source).should.equal @desc_textile
+    @story.body(:source).should.equal @body_textile
+  end
+
+  it "should not mark raw source as html safe" do
+    @story.description(:source).should.not.be :html_safe?
+    @story.body(:source).should.not.be :html_safe?
+  end if ActsAsSanitiled.html_safe_available?
 
   it "should raise when given a non-sensical option" do
     proc{ @story.description(:cassadaga) }.should.raise

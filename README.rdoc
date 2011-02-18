@@ -2,37 +2,27 @@
 
 This plugin, based on Chris Wanstrath's venerable acts_as_textiled, extends the automatic textiling functionality to sanitization as well using as its basis Ryan Grove's powerful yet simple Sanitize gem.
 
-The reasoning behind this approach is simple.  Filtering input before it is saved to the database (as xss_terminate and many other popular plugins do) often fails to preserve user intent.  On the other hand, filtering output at the template level is error prone, and you are begging to get pwned.  Short of some sort of taint mode (which Rails 3 will have!), I believe the method employed by acts_as_textiled is the next best thing: you get safe output by default, but input is never corrupted.
+*Important Development Status Update* There used to be a paragraph here about why I liked this approach, but I've come to disagree with it over time.  First, generally because the Rails 3 / rails_xss approach of tainted strings is ultimately better than the bandaid that this provided.  But specifically because the cleverness of the solution outweighs its usefulness.  It's a lot of hacking around internals simply to avoid calling a helper in a view, which while easy to forget, does not usually appear in all that many places or change all that often.  Meanwhile, the internals of the model carry significantly more complexity, and suffer irredeemable breakages when you introduce something like I18n with Globalize2.  Aside from that, any gains that were made are erased the minute you need to emit something other than HTML.  With that in mind, I am still maintaining acts_as_sanitiled to the extent I need it, but I am no longer sanctioning the approach, and I would recommend deprecating your usage of the plugin.
 
 == Requirements
 
+The officially sanctioned requirements are:
+
 * Sanitize >1.1.0 (prior versions had a whitespace issue)
-* Nokogiri >1.3.3
-* RedCloth (for Textile support)
-* ActiveRecord (tested on 2.3.4)
+* RedCloth >4.1.0
+* ActiveRecord (tested on 2.3.10)
+
+However there are a lot of little aberrations in output when you start mixing and matching versions of the various moving parts.  Most recently I am working with REE 1.8.7, Sanitize 2.0.0, RedCloth 4.2.5, and Nokogiri 1.4.4, and I make sure specs pass with that mix.  With other versions things should still work but the output might be slightly different (see known issues)
 
 == Installation
 
-acts_as_sanitiled is distributed via Gemcutter.  If you are enlightened you can simply do:
-
   gem install acts_as_sanitiled
-
-If you haven't checkout out Gemcutter yet:
-
-  gem install --source http://gemcutter.org acts_as_sanitiled
-
-Then in your Rails environment.rb:
-
-  config.gem 'acts_as_sanitiled'
 
 == Known Issues
 
-The tests are passing for me with Sanitize 1.1.0 and Nokogiri 1.4.0 under my native ruby install of 1.8.6.  However under 1.8.7 (using rvm) I get a whitespace error in the sanitized html, which results in paragraphs and line breaks not having line breaks, and thus screws up the output of attribute(:plain).  I haven't been able to figure out what the problem is yet, but if you see a test failure on:
+Line breaks sometime disappear from output which breaks the :plain output.  This issue was not present under 1.8.6, Sanitize 1.1.0 and Nokogiri 1.4.0, but when I switched to 1.8.7 it appears.  I never tracked down the cause, so keep an eye out for this one.
 
-   ./spec/sanitiled_spec.rb:49: A standard textiled object - should properly textilize and strip html
-
-Let me know if you are able to help debug.
-
+XHTML vs HTML output.  This changed when I upgraded to Sanitize 2.0.0 and Nokogiri 1.4.4.  This must have become the default somewhere, which is fine with me since HTML 5 is the future.  Specs upgraded accordingly.
 
 == Changes from acts_as_textiled
 

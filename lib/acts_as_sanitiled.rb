@@ -15,6 +15,10 @@ module ActsAsSanitiled #:nodoc: all
     klass.extend ClassMethods
   end
 
+  def self.html_safe_available?
+    "".respond_to?(:html_safe)
+  end
+
   module ClassMethods
     def acts_as_textiled(*attributes)
       raise "only acts_as_sanitized or acts_as_sanitiled can take an options hash" if attributes.last.is_a?(Hash)
@@ -59,7 +63,7 @@ module ActsAsSanitiled #:nodoc: all
               string = Sanitize.clean(string, sanitize_options) unless skip_sanitize
               textiled[attribute.to_s] = string
             end
-            textiled[attribute.to_s]
+            ActsAsSanitiled.html_safe_available? ? textiled[attribute.to_s].html_safe : textiled[attribute.to_s]
           elsif type.nil? && self[attribute].nil?
             nil
           elsif type_options.include?(type.to_s)
@@ -69,7 +73,7 @@ module ActsAsSanitiled #:nodoc: all
           end
         end
 
-        define_method("#{attribute}_plain",  proc { strip_html(__send__(attribute)) if __send__(attribute) } )
+        define_method("#{attribute}_plain",  proc { ActsAsSanitiled.html_safe_available? ? strip_html(__send__(attribute)).html_safe : strip_html(__send__(attribute)) if __send__(attribute) } )
         define_method("#{attribute}_source", proc { __send__("#{attribute}_before_type_cast") } )
 
         @textiled_attributes << attribute
